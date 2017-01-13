@@ -89,7 +89,7 @@ module.exports = class ComponentSource extends EntitySource {
 
     findFile(filePath) {
         filePath = Path.resolve(filePath);
-        if (this._fileTree) {
+        if (this._fileTrees) {
             function findFile(items) {
                 for (const item of items) {
                     if (item.isFile && item.path === filePath) {
@@ -103,7 +103,7 @@ module.exports = class ComponentSource extends EntitySource {
                 }
             }
 
-            return findFile(this._fileTree.children);
+            return findFile(this._fileTrees.children);
         }
     }
 

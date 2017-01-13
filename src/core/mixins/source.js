@@ -27,7 +27,7 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
         this._app = null;
         this._loading = false;
         this._monitor = null;
-        this._fileTree = null;
+        this._fileTrees = [];
     }
 
     initSource(name, config, app) {
@@ -55,8 +55,25 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
         return this.get('path') ? Path.resolve(this.get('path')) : null;
     }
 
+    get fullPaths() {
+        let paths = [];
+        for(let i = 0; i < this.get('path').length; i++) {
+            paths.push(this.get('path')[i]['path']);
+        }
+        console.log(paths);
+        return paths;
+    }
+
     get relPath() {
         return Path.relative(process.cwd(), this.get('path'));
+    }
+
+    get relPaths() {
+        let paths = [];
+        for(let i = 0; i < this.get('path').length; i++) {
+            paths.push(Path.relative(process.cwd(), this.get('path')[i]['path']));
+        }
+        return paths;
     }
 
     toStream() {
@@ -67,11 +84,15 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
         return this.get('path') && utils.fileExistsSync(this.get('path'));
     }
 
+    isArray() {
+        return Array.isArray(this.get('path'));
+    }
+
     load(force) {
         if (!this.get('path')) {
             return Promise.resolve(this);
         }
-        if (!this.exists()) {
+        if (!this.exists() && !this.isArray()) {
             Log.error(`The ${this.name} directory (${this.get('path')}) does not exist.`);
             return Promise.resolve(this);
         }
@@ -155,24 +176,36 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
     }
 
     _build() {
+        let fullPaths = [],
+            relPaths = [];
         if (!this.get('path')) {
             return Promise.resolve(this);
         }
-        this._loading = this._getTree().then(fileTree => {
-            this._fileTree = fileTree;
-            this._loading = false;
-            return this._parse(fileTree);
-        }).catch(e => {
-            Log.error(e);
-            if (this._app.debug) {
-                Log.write(e.stack);
-            }
-        });
+        if(this.isArray()){
+            fullPaths = this.fullPaths;
+            relPaths = this.relPaths;
+
+        } else {
+            fullPaths.push(this.fullPath);
+            relPaths.push(this.relPath);
+        }
+        for(let i = 0; i < fullPaths.length; i++) {
+            this._loading = this._getTree(fullPaths[i], relPaths[i]).then(fileTree => {
+                this._fileTrees.push(fileTree);
+                this._loading = false;
+                return this._parse(fileTree);
+            }).catch(e => {
+                Log.error(e);
+                if (this._app.debug) {
+                    Log.write(e.stack);
+                }
+            });
+        }
         return this._loading;
     }
 
-    _getTree() {
-        return fs.describe(this.fullPath, this.relPath);
+    _getTree(fullPath, relPath) {
+        return fs.describe(fullPath, relPath);
     }
 
     _parse() {
