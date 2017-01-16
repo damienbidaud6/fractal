@@ -57,7 +57,7 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
 
     get fullPaths() {
         let paths = [];
-        for(let i = 0; i < this.get('path').length; i++) {
+        for (let i = 0; i < this.get('path').length; i++) {
             paths.push(this.get('path')[i]['path']);
         }
         return paths;
@@ -69,7 +69,7 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
 
     get relPaths() {
         let paths = [];
-        for(let i = 0; i < this.get('path').length; i++) {
+        for (let i = 0; i < this.get('path').length; i++) {
             paths.push(Path.relative(process.cwd(), this.get('path')[i]['path']));
         }
         return paths;
@@ -177,17 +177,18 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
     _build() {
         let fullPaths = [],
             relPaths = [];
+
         if (!this.get('path')) {
             return Promise.resolve(this);
         }
-        if(this.isArray()){
+        if (this.isArray()){
             fullPaths = this.fullPaths;
             relPaths = this.relPaths;
         } else {
             fullPaths.push(this.fullPath);
             relPaths.push(this.relPath);
         }
-        for(let i = 0; i < fullPaths.length; i++) {
+        for (let i = 0; i < fullPaths.length; i++) {
             this._loading = this._getTree(fullPaths[i], relPaths[i]).then(fileTree => {
                 this._fileTrees.push(fileTree);
                 this._loading = false;
