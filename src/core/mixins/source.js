@@ -60,7 +60,6 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
         for(let i = 0; i < this.get('path').length; i++) {
             paths.push(this.get('path')[i]['path']);
         }
-        console.log(paths);
         return paths;
     }
 
@@ -184,7 +183,6 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
         if(this.isArray()){
             fullPaths = this.fullPaths;
             relPaths = this.relPaths;
-
         } else {
             fullPaths.push(this.fullPath);
             relPaths.push(this.relPath);
