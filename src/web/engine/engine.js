@@ -102,6 +102,7 @@ module.exports = class Engine {
     render(path, context) {
         lastError = null;
         this._engine.addGlobal('frctl', this._globals);
+        this._engine.globals.frctl.components_fileTrees = this.matchComponent(context);
         return this._engine.renderAsync(path, context || {});
     }
 
@@ -111,4 +112,15 @@ module.exports = class Engine {
         return this._engine.renderStringAsync(str, context || {});
     }
 
+    matchComponent(context) {
+        let components = this._globals.components._fileTrees;
+        let i = 0;
+
+        if (context.request) {
+            const paths = context.request.path;
+            while (!(components[i].root === paths) && i < components.length) i++;
+            components = components[i];
+        }
+        return components;
+    }
 };
