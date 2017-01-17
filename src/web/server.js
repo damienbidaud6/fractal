@@ -123,7 +123,6 @@ module.exports = class Server extends mix(Emitter) {
 
     _startRouting(trees) {
         let tree = null;
-        console.log(trees);
         for(let i = 0; i < trees.length; i++) {
             tree = trees[i];
             this._theme.addRoute(tree.root, {
