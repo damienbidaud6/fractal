@@ -17,6 +17,7 @@ module.exports = {
         yield: 'yield',
         splitter: '--',
         ext: '.hbs',
+        multiPages: false,
         resources: {
             assets: {
                 label: 'Assets',
