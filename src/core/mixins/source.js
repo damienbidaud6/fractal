@@ -58,7 +58,7 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
     get fullPaths() {
         let paths = [];
         for (let i = 0; i < this.get('path').length; i++) {
-            paths.push(this.get('path')[i]['path']);
+            paths.push(this.get('path')[i]);
         }
         return paths;
     }
@@ -70,7 +70,7 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
     get relPaths() {
         let paths = [];
         for (let i = 0; i < this.get('path').length; i++) {
-            paths.push(Path.relative(process.cwd(), this.get('path')[i]['path']));
+            paths.push(Path.relative(process.cwd(), this.get('path')[i]));
         }
         return paths;
     }
@@ -190,6 +190,7 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
         }
         for (let i = 0; i < fullPaths.length; i++) {
             this._loading = this._getTree(fullPaths[i], relPaths[i]).then(fileTree => {
+                if(i > 0) this._updateRoot(fileTree);
                 this._fileTrees.push(fileTree);
                 this._loading = false;
                 return this._parse(fileTree);
@@ -201,6 +202,16 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
             });
         }
         return this._loading;
+    }
+
+    _updateRoot(tree) {
+        const root = '/' + tree.base;
+        tree.root = root;
+
+        for (let i  = 0; i < tree.children.length; i++) {
+            tree.children[i].root = root;
+        }
+        return tree;
     }
 
     _getTree(fullPath, relPath) {

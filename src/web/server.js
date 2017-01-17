@@ -68,11 +68,19 @@ module.exports = class Server extends mix(Emitter) {
 
                 return new Promise((resolve, reject) => {
                     this._instance = this._server.listen(ports.server, (err) => {
+
                         if (err) {
                             return reject(err);
                         }
 
                         this._urls.server = `http://localhost:${ports.server}`;
+
+                        if (this._app._components._fileTrees.length > 1) {
+                            this._startRouting(this._app._components._fileTrees);
+                        }
+                        if (this._app._docs._fileTrees.length > 1) {
+                            this._startRouting(this._app._docs._fileTrees);
+                        }
 
                         if (this._sync) {
                             return this._startSync(resolve, reject);
@@ -111,6 +119,18 @@ module.exports = class Server extends mix(Emitter) {
             this._connections = {};
         }
         this.emit('stopped');
+    }
+
+    _startRouting(trees) {
+        let tree = null;
+        console.log(trees);
+        for(let i = 0; i < trees.length; i++) {
+            tree = trees[i];
+            this._theme.addRoute(tree.root, {
+                view: 'pages/components/preview.nunj'
+            });
+
+        }
     }
 
     _startSync(resolve, reject) {
@@ -185,7 +205,6 @@ module.exports = class Server extends mix(Emitter) {
         });
 
         Log.debug(`Request for '${req.url}'`);
-
         const match = this._theme.matchRoute(req.path);
 
         if (!match) {
@@ -213,7 +232,6 @@ module.exports = class Server extends mix(Emitter) {
             server: true,
             builder: false,
         };
-
         this._render(match.route.view, context)
             .then(v => res.send(v).end())
             .catch(err => next(err));
