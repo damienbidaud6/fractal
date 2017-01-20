@@ -108,8 +108,9 @@ module.exports = class Engine {
         lastError = null;
         let globals = extend(this._globals, {});
         globals.components._fileTrees = this.matchComponent(context);
-        // console.log(TAG, globals.components._fileTrees);
         globals.components._config.path = globals.components._fileTrees.path;
+        globals.components._items = new Set(globals.components._fileTrees.children);
+        console.log(TAG, globals.components._items);
         this._engine.addGlobal('frctl', globals);
         return this._engine.renderAsync(path, context || {});
     }
@@ -123,7 +124,7 @@ module.exports = class Engine {
     matchComponent(context) {
         let components = this._globals.components._fileTrees;
         let i = 0;
-        console.log(TAG, components);
+
         if (context.request && components.length > 1) {
             const paths = context.request.path;
             while (!(components[i].root === paths) && i < components.length) i++;
@@ -132,5 +133,9 @@ module.exports = class Engine {
         }
 
         return components;
+    }
+
+    toJson(array) {
+        return JSON.parse(JSON.stringify(array));
     }
 };
