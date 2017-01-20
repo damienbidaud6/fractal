@@ -8,12 +8,17 @@ const _ = require('lodash');
 const requireAll = require('require-all');
 const Log = require('../../core/log');
 const WebError = require('../error');
+var extend = require('util')._extend;
 const extensions = requireAll(`${__dirname}/extensions`);
 const filters = requireAll(`${__dirname}/filters`);
 const globals = requireAll(`${__dirname}/globals`);
 
+
+
 const templateError = nunjucks.lib.TemplateError;
 let lastError = null;
+
+const TAG = "ENGINE";
 
 nunjucks.lib.TemplateError = function (message, lineno, colno) {
     if (message instanceof WebError) {
@@ -101,8 +106,11 @@ module.exports = class Engine {
 
     render(path, context) {
         lastError = null;
-        this._engine.addGlobal('frctl', this._globals);
-        this._engine.globals.frctl.components_fileTrees = this.matchComponent(context);
+        let globals = extend(this._globals, {});
+        globals.components._fileTrees = this.matchComponent(context);
+        // console.log(TAG, globals.components._fileTrees);
+        globals.components._config.path = globals.components._fileTrees.path;
+        this._engine.addGlobal('frctl', globals);
         return this._engine.renderAsync(path, context || {});
     }
 
@@ -115,12 +123,14 @@ module.exports = class Engine {
     matchComponent(context) {
         let components = this._globals.components._fileTrees;
         let i = 0;
-
-        if (context.request) {
+        console.log(TAG, components);
+        if (context.request && components.length > 1) {
             const paths = context.request.path;
             while (!(components[i].root === paths) && i < components.length) i++;
             components = components[i];
+            // components._config.path = components._config.path[i];
         }
+
         return components;
     }
 };
