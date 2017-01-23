@@ -282,6 +282,29 @@ module.exports = class ComponentSource extends EntitySource {
         return anymatch(['**/*.*', `!**/*${this.get('ext')}`, '!**/*.config.{js,json,yaml,yml}', '!**/readme.md'], this._getPath(file));
     }
 
+    findIndex(array, comparator) {
+        let index = 0;
+        let strings;
+        comparator = comparator.replace('/', '');
+        for (let i = 0; i < array.length; i++) {
+            strings = array[i].split('/');
+            if (strings.indexOf(comparator) > -1) index = i;
+        }
+        return index;
+    }
+
+    _getParent(parent, root) {
+        const paths = parent._config.path;
+        const filesThrees = parent._fileTrees;
+        let parentComponent = parent;
+        if (Array.isArray(paths)) {
+            const index = this.findIndex(paths, root);
+            parentComponent._config.path = paths[index];
+            parentComponent._fileTrees = filesThrees[index];
+        }
+        return parentComponent;
+    }
+
     _parse(fileTree) {
         const source = this;
 
@@ -325,7 +348,8 @@ module.exports = class ComponentSource extends EntitySource {
                     varViews: _.filter(matched.varViews, f => f.name.startsWith(nameMatch)),
                     config: dirConfigFile
                 };
-                return Component.create(dirConfig, files, resources, parent || source);
+                const parentComponent = source._getParent(parent, dir.root);
+                return Component.create(dirConfig, files, resources, parentComponent || source);
             }
 
             // not a component, so go through the items and group into components and collections
@@ -365,11 +389,11 @@ module.exports = class ComponentSource extends EntitySource {
             });
 
             const items = yield (_.concat(components, collections));
+            console.log(items);
             collection.setItems(_.orderBy(items, ['order', 'name']));
             return collection;
         });
 
         return build(fileTree);
     }
-
 };

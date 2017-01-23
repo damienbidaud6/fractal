@@ -109,8 +109,6 @@ module.exports = class Engine {
         let globals = extend(this._globals, {});
         globals.components._fileTrees = this.matchComponent(context);
         globals.components._config.path = globals.components._fileTrees.path;
-        globals.components._items = new Set(globals.components._fileTrees.children);
-        console.log(TAG, globals.components._items);
         this._engine.addGlobal('frctl', globals);
         return this._engine.renderAsync(path, context || {});
     }
