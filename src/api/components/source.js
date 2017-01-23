@@ -285,10 +285,12 @@ module.exports = class ComponentSource extends EntitySource {
     findIndex(array, comparator) {
         let index = 0;
         let strings;
-        comparator = comparator.replace('/', '');
-        for (let i = 0; i < array.length; i++) {
-            strings = array[i].split('/');
-            if (strings.indexOf(comparator) > -1) index = i;
+        if (comparator !== '/') {
+            comparator = comparator.replace('/', '');
+            for (let i = 0; i < array.length; i++) {
+                strings = array[i].split('/');
+                if (strings.indexOf(comparator) > -1) index = i;
+            }
         }
         return index;
     }
@@ -307,7 +309,6 @@ module.exports = class ComponentSource extends EntitySource {
 
     _parse(fileTree) {
         const source = this;
-
         const build = co.wrap(function* (dir, parent) {
             let collection;
             const children = dir.children || [];
@@ -389,7 +390,6 @@ module.exports = class ComponentSource extends EntitySource {
             });
 
             const items = yield (_.concat(components, collections));
-            console.log(items);
             collection.setItems(_.orderBy(items, ['order', 'name']));
             return collection;
         });

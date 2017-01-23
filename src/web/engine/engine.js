@@ -106,10 +106,7 @@ module.exports = class Engine {
 
     render(path, context) {
         lastError = null;
-        let globals = extend(this._globals, {});
-        globals.components._fileTrees = this.matchComponent(context);
-        globals.components._config.path = globals.components._fileTrees.path;
-        this._engine.addGlobal('frctl', globals);
+        this._engine.addGlobal('frctl', this._globals);
         return this._engine.renderAsync(path, context || {});
     }
 
@@ -117,23 +114,5 @@ module.exports = class Engine {
         lastError = null;
         this._engine.addGlobal('frctl', this._globals);
         return this._engine.renderStringAsync(str, context || {});
-    }
-
-    matchComponent(context) {
-        let components = this._globals.components._fileTrees;
-        let i = 0;
-
-        if (context.request && components.length > 1) {
-            const paths = context.request.path;
-            while (!(components[i].root === paths) && i < components.length) i++;
-            components = components[i];
-            // components._config.path = components._config.path[i];
-        }
-
-        return components;
-    }
-
-    toJson(array) {
-        return JSON.parse(JSON.stringify(array));
     }
 };
