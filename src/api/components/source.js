@@ -282,30 +282,6 @@ module.exports = class ComponentSource extends EntitySource {
         return anymatch(['**/*.*', `!**/*${this.get('ext')}`, '!**/*.config.{js,json,yaml,yml}', '!**/readme.md'], this._getPath(file));
     }
 
-    findIndex(array, comparator) {
-        let index = 0;
-        let strings;
-        if (comparator !== '/') {
-            comparator = comparator.replace('/', '');
-            for (let i = 0; i < array.length; i++) {
-                strings = array[i].split('/');
-                if (strings.indexOf(comparator) > -1) index = i;
-            }
-        }
-        return index;
-    }
-
-    _getParent(parent, root) {
-        const paths = parent._config.path;
-        const filesThrees = parent._fileTrees;
-        if (Array.isArray(paths)) {
-            const index = this.findIndex(paths, root);
-            parent._config.path = paths[index];
-            parent._fileTrees = filesThrees[index];
-        }
-        return parent;
-    }
-
     _parse(fileTree) {
         const source = this;
         const build = co.wrap(function* (dir, parent) {
@@ -348,9 +324,7 @@ module.exports = class ComponentSource extends EntitySource {
                     varViews: _.filter(matched.varViews, f => f.name.startsWith(nameMatch)),
                     config: dirConfigFile
                 };
-                let parentComponent = _.clone(parent);
-                parentComponent = source._getParent(parentComponent, dir.root);
-                return Component.create(dirConfig, files, resources, parentComponent || source);
+                return Component.create(dirConfig, files, resources, parent || source);
             }
 
             // not a component, so go through the items and group into components and collections

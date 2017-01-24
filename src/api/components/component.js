@@ -159,6 +159,30 @@ module.exports = class Component extends Entity {
     }
 
     static *create(config, files, resources, parent) {
+        const findIndex = (array, comparator) => {
+            let index = 0;
+            let strings;
+            if (comparator !== '/') {
+                comparator = comparator.replace('/', '');
+                for (let i = 0; i < array.length; i++) {
+                    strings = array[i].split('/');
+                    if (strings.indexOf(comparator) > -1) index = i;
+                }
+            }
+            return index;
+        };
+
+        const getParent = (parent, root) => {
+            const paths = parent._config.path;
+            const filesThrees = parent._fileTrees;
+            if (Array.isArray(paths)) {
+                const index = findIndex(paths, root);
+                parent._config.path = paths[index];
+                parent._fileTrees = filesThrees[index];
+            }
+            return parent;
+        };
+        parent = getParent(parent, files.view.root);
         config.notes = config.notes || config.readme;
         if (!config.notes && files.readme || config.notesFromFile && files.readme) {
             config.notesFromFile = true;

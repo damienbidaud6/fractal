@@ -27,7 +27,7 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
         this._app = null;
         this._loading = false;
         this._monitor = null;
-        this._fileTrees = [];
+        this._fileTrees = null;
     }
 
     initSource(name, config, app) {
@@ -177,7 +177,7 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
     _build() {
         let fullPaths = [],
             relPaths = [];
-
+        let promises = [];
         if (!this.get('path')) {
             return Promise.resolve(this);
         }
@@ -189,18 +189,32 @@ module.exports = mixin((superclass) => class Source extends mix(superclass).with
             relPaths.push(this.relPath);
         }
         for (let i = 0; i < fullPaths.length; i++) {
-            this._loading = this._getTree(fullPaths[i], relPaths[i]).then(fileTree => {
-                if(i > 0) this._updateRoot(fileTree);
-                this._fileTrees.push(fileTree);
-                this._loading = false;
-                return this._parse(fileTree);
-            }).catch(e => {
-                Log.error(e);
-                if (this._app.debug) {
-                    Log.write(e.stack);
-                }
-            });
+
+            promises.push(this._getTree(fullPaths[i], relPaths[i]));
+
+            // this._loading = this._getTree(fullPaths[i], relPaths[i]).then(fileTree => {
+            //     if(i > 0) this._updateRoot(fileTree);
+            //     this._fileTrees.push(fileTree);
+            //     if (i === fullPaths.length) this._loading = false;
+            //     return this._parse(fileTree);
+            // }).catch(e => {
+            //     Log.error(e);
+            //     if (this._app.debug) {
+            //         Log.write(e.stack);
+            //     }
+            // });
         }
+
+        this._loading = Promise.all(promises).then(fileThrees => {
+           let parses = [];
+           this._fileTrees = fileThrees;
+           this._loading = false;
+           for(let i = 0; i < fileThrees.length; i++) {
+               this._updateRoot(fileThrees[i]);
+               parses.push(this._parse(fileThrees[i]));
+           }
+           return parses;
+        });
         return this._loading;
     }
 
