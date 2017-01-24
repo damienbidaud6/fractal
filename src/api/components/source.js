@@ -298,13 +298,12 @@ module.exports = class ComponentSource extends EntitySource {
     _getParent(parent, root) {
         const paths = parent._config.path;
         const filesThrees = parent._fileTrees;
-        let parentComponent = parent;
         if (Array.isArray(paths)) {
             const index = this.findIndex(paths, root);
-            parentComponent._config.path = paths[index];
-            parentComponent._fileTrees = filesThrees[index];
+            parent._config.path = paths[index];
+            parent._fileTrees = filesThrees[index];
         }
-        return parentComponent;
+        return parent;
     }
 
     _parse(fileTree) {
@@ -349,7 +348,8 @@ module.exports = class ComponentSource extends EntitySource {
                     varViews: _.filter(matched.varViews, f => f.name.startsWith(nameMatch)),
                     config: dirConfigFile
                 };
-                const parentComponent = source._getParent(parent, dir.root);
+                let parentComponent = _.clone(parent);
+                parentComponent = source._getParent(parentComponent, dir.root);
                 return Component.create(dirConfig, files, resources, parentComponent || source);
             }
 
