@@ -18,8 +18,6 @@ const globals = requireAll(`${__dirname}/globals`);
 const templateError = nunjucks.lib.TemplateError;
 let lastError = null;
 
-const TAG = "ENGINE";
-
 nunjucks.lib.TemplateError = function (message, lineno, colno) {
     if (message instanceof WebError) {
         message.lineno = lineno;
